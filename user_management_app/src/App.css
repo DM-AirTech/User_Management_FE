@@ -1,0 +1,77 @@
+/* Set global quantities */
+:root {
+  /* Sizes */
+  /* Half of the margin between all the boxes */
+  --half-margins: 5px; 
+  --golden-ratio: 1.618;
+  
+  /* Smallest of boxes sizes */
+  --size-a: 50px;                                      
+  --size-b: calc( 2.5*var(--size-a)*var(--golden-ratio) ); /* Regular width of side bar */
+
+  --border-round: 12px; /* Border round */
+
+  /* Horizontal Sizes */
+  --h-size_tot: 100vw;
+  --h_size-1: var(--size-b);
+  --h_size-2: calc(var(--h-size_tot) - 5*var(--half-margins) - var(--h_size-1));
+
+  /* Vertical Sizes */
+  --v-size_tot: 100vh;
+  --v_size-1: var(--size-a);
+  /* Screen size - global margins - logo element (Used when screen is splitted) */
+  --v-size-2: calc( var(--v-size_tot) - 5*var(--half-margins) - var(--v_size-1) );
+  /* Screen size - global margins */
+  --v-size-3: calc( var(--v-size_tot) - 4*var(--half-margins) );
+
+  
+
+  /* Colors */
+  --color_1:  #f4f6f8; /* soft neutral background */
+  --color_2:  white; 
+  --color_3:  #081e2d;
+  --color_4:  #f39c12;
+  --color_10: rgba(0,0,0,0.15); /* Used as shadows of the boxes */
+}
+
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+input[type="password"]::-ms-reveal {
+  display: none;
+}

@@ -1,0 +1,10 @@
+nohup: ignoring input
+
+> user_management_app@0.1.0 dev
+> vite
+
+
+  VITE v7.1.3  ready in 107 ms
+
+  ➜  Local:   http://localhost:3001/
+  ➜  Network: use --host to expose

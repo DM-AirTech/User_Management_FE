@@ -1,0 +1,333 @@
+/* ============================================================
+   REGISTRATION PAGE
+   ============================================================ */
+
+.register-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--brand-navy) 0%, #122d42 60%, #1e4a63 100%);
+  padding: 20px;
+  font-family: var(--font-primary);
+}
+
+.register-container {
+  padding: 30px 40px;
+  background: var(--brand-white);
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 420px;
+}
+
+.register-title {
+  text-align: center;
+  color: var(--brand-navy);
+  margin-bottom: 8px;
+  font-size: 24px;
+  font-family: var(--font-primary);
+}
+
+.register-subtitle {
+  text-align: center;
+  color: var(--brand-blue);
+  font-size: 13px;
+  font-family: var(--font-primary);
+  margin-bottom: 24px;
+  line-height: 1.5;
+  padding: 8px 12px;
+  background-color: rgba(76, 134, 204, 0.08);
+  border-left: 3px solid var(--brand-blue);
+  border-radius: 4px;
+  text-align: left;
+}
+
+.register-success {
+  color: var(--brand-green);
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 14px;
+  white-space: pre-line;
+  line-height: 1.6;
+  font-family: var(--font-primary);
+}
+
+/* Form */
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.register-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.register-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--brand-navy);
+  font-size: 15px;
+  font-family: var(--font-primary);
+}
+
+.register-label-hint {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: normal;
+  font-style: italic;
+}
+
+.register-field-hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  font-family: var(--font-primary);
+  line-height: 1.5;
+  padding: 6px 10px;
+  background-color: rgba(8, 30, 45, 0.04);
+  border-left: 3px solid var(--brand-navy);
+  border-radius: 3px;
+}
+
+.register-input {
+  width: 100%;
+  padding: 12px;
+  box-sizing: border-box;
+  border: 1px solid var(--brand-navy);
+  border-radius: 4px;
+  font-size: 16px;
+  font-family: var(--font-primary);
+  color: var(--brand-navy);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.register-input:focus {
+  outline: none;
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 3px rgba(76, 134, 204, 0.25);
+}
+
+/* Password wrapper */
+.register-input-wrapper {
+  position: relative;
+}
+
+.register-toggle-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  color: var(--brand-blue);
+  padding: 0;
+  user-select: none;
+}
+
+/* Password checklist */
+.register-checklist {
+  margin-top: 8px;
+  background-color: rgba(76, 134, 204, 0.08);
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid var(--brand-navy);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-family: var(--font-primary);
+}
+
+.checklist-item.valid {
+  color: var(--brand-green);
+}
+
+.checklist-item.invalid {
+  color: var(--brand-orange);
+}
+
+.checklist-icon {
+  font-weight: bold;
+}
+
+/* Checkbox rows */
+.register-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.register-checkbox-label {
+  font-size: 14px;
+  color: var(--brand-navy);
+  font-family: var(--font-primary);
+}
+
+.register-checkbox-label a {
+  color: var(--brand-blue);
+  text-decoration: none;
+}
+
+.register-checkbox-label a:hover {
+  text-decoration: underline;
+}
+
+/* Submit button */
+.register-submit-btn {
+  padding: 12px;
+  background-color: var(--brand-green);
+  color: var(--brand-navy);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 17px;
+  font-weight: bold;
+  font-family: var(--font-ui);
+  margin-top: 10px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.register-submit-btn:hover {
+  background-color: var(--brand-green);
+  opacity: 0.85;
+}
+
+.register-submit-btn:active {
+  transform: scale(0.98);
+}
+
+/* Error modal overlay */
+.register-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(8, 30, 45, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.register-modal {
+  background-color: var(--brand-white);
+  padding: 20px 30px;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  font-size: 15px;
+  color: var(--brand-navy);
+  border-top: 4px solid var(--brand-orange);
+}
+
+.register-modal p {
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.register-modal-close {
+  padding: 10px 20px;
+  background-color: var(--brand-blue);
+  border: none;
+  border-radius: 4px;
+  color: var(--brand-white);
+  font-weight: bold;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.register-modal-close:hover {
+  background-color: var(--brand-navy);
+}
+.domain-banner {
+  font-size: 13px;
+  margin-top: 6px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  line-height: 1.5;
+  font-family: var(--font-primary);
+}
+ 
+.domain-banner.checking {
+  background: rgba(76, 134, 204, 0.08);
+  color: var(--brand-navy);
+  border-left: 3px solid var(--brand-blue);
+}
+ 
+.domain-banner.info {
+  background: rgba(76, 134, 204, 0.10);
+  color: var(--brand-blue);
+  border-left: 3px solid var(--brand-blue);
+}
+ 
+.domain-banner.warning {
+  background: rgba(255, 160, 40, 0.10);
+  color: #7a5800;
+  border-left: 3px solid var(--brand-orange);
+}
+ 
+.domain-banner.success {
+  background: rgba(60, 180, 100, 0.10);
+  color: #1a6b3c;
+  border-left: 3px solid var(--brand-green);
+}
+ 
+.domain-banner.error {
+  background: rgba(200, 50, 50, 0.08);
+  color: #a00;
+  border-left: 3px solid var(--brand-orange);
+}
+ 
+/* Flow selector section — wraps is_admin checkbox + admin_email field */
+.register-flow-selector {
+  background: rgba(8, 30, 45, 0.03);
+  border: 1px solid rgba(8, 30, 45, 0.12);
+  border-radius: 6px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+ 
+/* Locked input — org name when arriving via invite */
+.register-input-locked {
+  background: rgba(8, 30, 45, 0.05);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  border-color: rgba(8, 30, 45, 0.20);
+}
+ 
+/* Error text — shown on invalid invite page */
+.register-error {
+  color: var(--brand-orange);
+  font-size: 15px;
+  font-family: var(--font-primary);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+ 
+/* Disabled submit button */
+.register-submit-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+ 

@@ -1,0 +1,85 @@
+/* ============================================================
+   CONTACT FORM — brand variables come from brand.css
+   which is imported globally in App.js
+   ============================================================ */
+
+.contact-form-container {
+  max-width: 600px;
+  margin: auto;
+  padding: 2rem;
+  border: 2px solid var(--brand-navy);
+  border-radius: 10px;
+  background-color: var(--brand-navy);
+  font-family: var(--font-primary);
+}
+
+.contact-form-container h2 {
+  color: var(--brand-white);
+  margin-bottom: 1.5rem;
+  font-size: 1.3rem;
+  font-family: var(--font-primary);
+}
+
+.contact-form-container form {
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-form-container label {
+  margin-bottom: 1rem;
+  color: var(--brand-white);
+  font-size: 0.9rem;
+  font-family: var(--font-primary);
+}
+
+.contact-form-container input,
+.contact-form-container textarea {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+  border: 1px solid var(--brand-navy);
+  border-radius: 5px;
+  background-color: var(--brand-white);
+  color: var(--brand-navy);
+  font-family: var(--font-primary);
+  font-size: 0.9rem;
+  box-sizing: border-box;
+}
+
+.contact-form-container input:focus,
+.contact-form-container textarea:focus {
+  outline: none;
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 2px rgba(76, 134, 204, 0.3);
+}
+
+.contact-form-container input[readonly] {
+  background-color: #f0f4f8;
+  color: #888;
+  cursor: not-allowed;
+}
+
+.contact-form-container textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.contact-form-container button[type="submit"] {
+  background-color: var(--brand-orange);
+  color: var(--brand-white);
+  padding: 0.75rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  margin-top: 0.5rem;
+}
+
+.contact-form-container button[type="submit"]:hover {
+  background-color: var(--brand-orange);
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
