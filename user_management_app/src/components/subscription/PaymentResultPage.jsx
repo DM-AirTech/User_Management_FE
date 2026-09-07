@@ -26,6 +26,24 @@ const PaymentResultPage = () => {
     setPaymentParam(p);
   }, []);
 
+  // ── If Stripe sent us back via cancel_url, tell the backend right
+  // away — this is a DEFINITIVE "the customer backed out" signal (unlike
+  // silently closing the tab, which is genuinely ambiguous), so there's
+  // no reason to make them wait on a webhook or a TTL before they can
+  // try again. Fire-and-forget: this call's success/failure doesn't
+  // affect what's shown on this page either way, so it's never awaited
+  // or blocking, and any error is just logged, not surfaced to the user.
+  useEffect(() => {
+    if (paymentParam !== "failed") return;
+
+    fetch(`${API_BASE}/subscriptions/checkout/abandon`, {
+      method: "POST",
+      headers: { "X-User-API-Key": apiKey },
+    }).catch((err) => {
+      console.error("Failed to abandon checkout (non-blocking):", err);
+    });
+  }, [paymentParam, apiKey]);
+
   // ── Fetch subscription status ───────────────────────────────────
   const fetchStatus = useCallback(async () => {
     try {
