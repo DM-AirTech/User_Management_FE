@@ -160,9 +160,20 @@ const PaymentResultPage = () => {
               <div className="detail-row">
                 <span className="detail-label">Amount paid</span>
                 <span className="detail-value">
-                  €{subStatus.price?.toFixed(2)}
+                  {subStatus.amount_paid != null
+                    ? `${subStatus.amount_paid.toFixed(2)} ${subStatus.currency || "EUR"}`
+                    : "—"}
                 </span>
               </div>
+              {subStatus.discount_code && (
+                <div className="detail-row">
+                  <span className="detail-label">Discount applied</span>
+                  <span className="detail-value">
+                    {subStatus.discount_code}
+                    {subStatus.discount_percent != null && ` (-${subStatus.discount_percent}%)`}
+                  </span>
+                </div>
+              )}
               {subStatus.current_period_end && (
                 <div className="detail-row">
                   <span className="detail-label">Next renewal</span>
