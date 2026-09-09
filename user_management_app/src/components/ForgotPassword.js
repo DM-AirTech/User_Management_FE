@@ -52,7 +52,7 @@ const ForgotPassword = () => {
       </form>
       {linkSent && (
         <p style={{ marginTop: 15, color: 'green' }}>
-          Password reset link has been sent if the email exists.
+          Password reset link has been sent if the email exists. Check your inbox and spam folder.
         </p>
       )}
       <ToastContainer position="top-right" autoClose={5000} />

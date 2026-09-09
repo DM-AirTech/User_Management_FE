@@ -42,7 +42,7 @@ const ContactForm = () => {
       <h2>Contact Us About the Corporate Plan</h2>
       <form onSubmit={handleSubmit}>
         <label>
-          Preferred Contact Email ID:
+          Your Email:
           <input
             type="email"
             required

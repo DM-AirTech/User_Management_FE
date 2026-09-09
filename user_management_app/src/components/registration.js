@@ -227,12 +227,12 @@ const RegistrationPage = () => {
         message =
           `Account created for "${data.username}"! ` +
           `A verification email has been sent to ${data.email}. ` +
-          `Please verify to activate your account.`;
+          `Please verify to activate your account. Check your inbox and spam folder.`;
       } else {
         message =
           `Registration submitted for "${data.username}". ` +
           `Your account is pending admin approval. ` +
-          `You will receive an email once approved.`;
+          `You will receive an email once approved. Check your inbox and spam folder.`;
       }
 
       navigate('/welcome');
