@@ -14,7 +14,7 @@ const SubscriptionPage = () => {
   const [billingCycle, setBillingCycle]   = useState("monthly");
   const [agreedPlans, setAgreedPlans]     = useState({});
   const [subscribingPlan, setSubscribingPlan] = useState(null);
-
+  const [apiPlans, setApiPlans] = useState([]);
   // NEW: when someone already has an active plan, the full comparison
   // table stays hidden until they explicitly ask to change/upgrade.
   const [wantsToUpgrade, setWantsToUpgrade] = useState(false);
@@ -95,6 +95,25 @@ const SubscriptionPage = () => {
     };
     fetchSubStatus();
   }, []);
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/subscriptions/plans`);
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch subscription plans");
+        }
+
+        const data = await res.json();
+        setApiPlans(data);
+      } catch (err) {
+        console.error("Plans fetch failed:", err);
+        toast.error("Could not load subscription prices.");
+      }
+    };
+
+    fetchPlans();
+  }, []);
 
   // ─── Subscribe handler ────────────────────────────────────────────
   const handleSubscribe = async (productCode, tierName, interval) => {
@@ -103,13 +122,7 @@ const SubscriptionPage = () => {
     setSubscribingPlan(planKey);
 
     try {
-      const plansRes = await fetch(`${API_BASE}/subscriptions/plans`, {
-        headers: { "X-User-API-Key": apiKey },
-      });
-      if (!plansRes.ok) throw new Error("Failed to fetch plans");
-      const plans = await plansRes.json();
-
-      const matched = plans.find(
+      const matched = apiPlans.find(
         (p) => p.product_code === productCode && p.interval === interval
       );
       if (!matched) {
@@ -223,7 +236,28 @@ const SubscriptionPage = () => {
       ],
     },
   ];
+  const getApiPrice = (productCode) => {
+    const plan = apiPlans.find(
+      (p) => p.product_code === productCode
+    );
 
+    if (!plan) {
+      return "Loading...";
+    }
+
+    return `€${Number(plan.price).toLocaleString()}`;
+  };
+  const getApiLimit = (productCode) => {
+    const plan = apiPlans.find(
+      (p) => p.product_code === productCode
+    );
+
+    if (!plan) {
+      return "Loading...";
+    }
+
+    return Number(plan.api_limit).toLocaleString();
+  };
   // ─── Plan definitions ─────────────────────────────────────────────
   const plans = [
     {
@@ -231,13 +265,18 @@ const SubscriptionPage = () => {
       productCode: billingCycle === "monthly"
         ? "vertimonitor_free_monthly"
         : "vertimonitor_free_yearly",
-      monthlyPrice: "€0",
-      yearlyPrice: "€0",
+      monthlyPrice:  getApiPrice("vertimonitor_free_monthly"),
+      yearlyPrice: getApiPrice("vertimonitor_free_yearly"),
       interval: billingCycle,
       features: [
         ["Access to Dashboard", true],
         ["Advanced Analytics", false],
-        ["API Calls", "500"],
+        ["API Calls",
+          getApiLimit(
+            billingCycle === "monthly"
+              ? "vertimonitor_free_monthly"
+              : "vertimonitor_free_yearly"
+          ),],
         ["Credit Sharing", false],
         ["Reselling", false],
         ["Classic Data Quality", true],
@@ -256,13 +295,18 @@ const SubscriptionPage = () => {
       productCode: billingCycle === "monthly"
         ? "vertimonitor_spoton_monthly"
         : "vertimonitor_spoton_yearly",
-      monthlyPrice: "€95",
-      yearlyPrice: "€1,140",
+      monthlyPrice: getApiPrice("vertimonitor_spoton_monthly"),
+      yearlyPrice: getApiPrice("vertimonitor_spoton_yearly"),
       interval: billingCycle,
       features: [
         ["Access to Dashboard", true],
         ["Advanced Analytics", true],
-        ["API Calls", billingCycle === "monthly" ? "10,000" : "120,000"],
+        ["API Calls",
+          getApiLimit(
+            billingCycle === "monthly"
+              ? "vertimonitor_spoton_monthly"
+              : "vertimonitor_spoton_yearly"
+          ),],
         ["Credit Sharing", true],
         ["Reselling", false],
         ["Classic Data Quality", true],
@@ -281,13 +325,18 @@ const SubscriptionPage = () => {
       productCode: billingCycle === "monthly"
         ? "vertimonitor_startup_monthly"
         : "vertimonitor_startup_yearly",
-      monthlyPrice: "€175",
-      yearlyPrice: "€2,100",
+      monthlyPrice: getApiPrice("vertimonitor_startup_monthly"),
+      yearlyPrice: getApiPrice("vertimonitor_startup_yearly"),
       interval: billingCycle,
       features: [
         ["Access to Dashboard", true],
         ["Advanced Analytics", true],
-        ["API Calls", billingCycle === "monthly" ? "5,000" : "60,000"],
+        ["API Calls",
+          getApiLimit(
+            billingCycle === "monthly"
+              ? "vertimonitor_startup_monthly"
+              : "vertimonitor_startup_yearly"
+          ),],
         ["Credit Sharing", false],
         ["Reselling", false],
         ["Classic Data Quality", true],
@@ -304,7 +353,7 @@ const SubscriptionPage = () => {
     {
       tier: "Corporate",
       productCode: "corporate",
-      monthlyPrice: "Contact us",
+      monthlyPrice: "Contact us",      
       yearlyPrice: "Contact us",
       interval: "custom",
       features: [
