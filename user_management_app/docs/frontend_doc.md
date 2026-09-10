@@ -63,7 +63,7 @@ contract these components rely on.
 
 ### Environment variables required
 ```dotenv
-REACT_APP_API_BASE_URL=http://localhost:8000     # Local backend, no trailing /subscriptions
+REACT_APP_API_BASE_URL=http://localhost:8000 or https://login.dm-airtech.com/api     # Local backend, no trailing /subscriptions
 for production  
 ```
 For local end-to-end testing against a locally-running backend, this
