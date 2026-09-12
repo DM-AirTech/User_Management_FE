@@ -38,63 +38,56 @@ const SubscriptionPage = () => {
   }, []);
 
   // ─── Fetch subscription status on page load ────────────────────────
-  useEffect(() => {
-    const fetchSubStatus = async () => {
-      const apiKey = localStorage.getItem("userApiKey");
-      if (!apiKey) {
-        setSubLoading(false);
-        return;
-      }
-      try {
-        const res = await fetch(`${API_BASE}/subscriptions/status`, {
-          headers: { "X-User-API-Key": apiKey },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setSubStatus(data);
+    // ─── Fetch subscription status — callable on mount, on cancel, and on re-entry ───
+  const fetchSubStatus = async () => {
+    const apiKey = localStorage.getItem("userApiKey");
+    if (!apiKey) {
+      setSubLoading(false);
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE}/subscriptions/status`, {
+        headers: { "X-User-API-Key": apiKey },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSubStatus(data);
 
-          // Show the right message based on status
-          switch (data.status) {
-            case "active":
-              // Only show toast if they just came back from payment
-              // Otherwise it's noisy on every page load
-              break;
-
-            case "pending":
-              toast.warn(
-                "You have a pending payment. Complete it or subscribe again to start fresh.",
-                { autoClose: 8000 }
-              );
-              break;
-
-            case "cancelled":
-              toast.info(
-                "Your subscription was cancelled. Resubscribe below to regain access.",
-                { autoClose: 8000 }
-              );
-              break;
-
-            case "failed":
-              toast.error(
-                "Your last payment failed. Please try subscribing again.",
-                { autoClose: 8000 }
-              );
-              break;
-
-            case "none":
-            default:
-              // No subscription — show plans silently, no toast needed
-              break;
-          }
+        switch (data.status) {
+          case "pending":
+            toast.warn(
+              "You have a pending payment. Complete it or subscribe again to start fresh.",
+              { autoClose: 8000 }
+            );
+            break;
+          case "cancelled":
+            toast.info(
+              "Your subscription was cancelled. Resubscribe below to regain access.",
+              { autoClose: 8000 }
+            );
+            break;
+          case "failed":
+            toast.error(
+              "Your last payment failed. Please try subscribing again.",
+              { autoClose: 8000 }
+            );
+            break;
+          default:
+            break;
         }
-      } catch (err) {
-        console.error("Subscription status fetch failed:", err);
-      } finally {
-        setSubLoading(false);
       }
-    };
+    } catch (err) {
+      console.error("Subscription status fetch failed:", err);
+    } finally {
+      setSubLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchSubStatus();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key]);
+  
   useEffect(() => {
     const fetchPlans = async () => {
       try {
@@ -173,6 +166,7 @@ const SubscriptionPage = () => {
   };
 
   // ─── Cancel handler (used by the current-plan card) ────────────────
+    // ─── Cancel handler (used by the current-plan card) ────────────────
   const handleCancelSubscription = async () => {
     if (!window.confirm("Are you sure you want to cancel your subscription?")) return;
     try {
@@ -180,12 +174,12 @@ const SubscriptionPage = () => {
         method: "POST",
         headers: { "X-User-API-Key": localStorage.getItem("userApiKey") },
       });
+      const data = await res.json();
       if (res.ok) {
-        toast.success("Subscription cancelled.");
-        setSubStatus({ ...subStatus, status: "cancelled" });
+        toast.success(data.message || "Subscription updated.");
         setWantsToUpgrade(false);
+        await fetchSubStatus(); // pull the real post-cancel state from the API
       } else {
-        const data = await res.json();
         toast.error(data.detail || "Cancellation failed.");
       }
     } catch {
@@ -428,7 +422,7 @@ const SubscriptionPage = () => {
             <h2 className="current-plan-card__plan-name">{subStatus.plan_name}</h2>
           </div>
 
-          {!subStatus.is_custom && (
+          {!subStatus.is_custom && !subStatus.cancel_at_period_end && (
             <button className="cancel-sub-btn" onClick={handleCancelSubscription}>
               Cancel subscription
             </button>
@@ -454,11 +448,17 @@ const SubscriptionPage = () => {
           </div>
         )}
 
-        {subStatus.is_custom ? (
+                {subStatus.is_custom ? (
           <p className="current-plan-card__note">
             Custom plan — to modify it, contact{" "}
             <a href="mailto:support@dm-airtech.com">support@dm-airtech.com</a>.
           </p>
+        ) : subStatus.cancel_at_period_end ? (
+          subStatus.current_period_end && (
+            <p className="current-plan-card__note current-plan-card__note--warning">
+              Cancelled — active until {new Date(subStatus.current_period_end).toLocaleDateString()}
+            </p>
+          )
         ) : (
           subStatus.current_period_end && (
             <p className="current-plan-card__note">
