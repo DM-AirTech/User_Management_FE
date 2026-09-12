@@ -11,11 +11,18 @@ import ContactForm        from "./components/subscription/ContactForm";
 import ForgotPasswordPage from './components/ForgotPassword';
 import ResetPasswordPage  from './components/ResetPassword';
 import PaymentResultPage  from './components/subscription/PaymentResultPage';
-import WelcomePage        from './components/WelcomePage';   // NEW
+import WelcomePage        from './components/WelcomePage';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('userApiKey'));
   const [username,        setUsername]        = useState(localStorage.getItem('username') || '');
+
+  // If a cross-app link (e.g. VertiMonitor's "Manage Subscription") lands here
+  // with #apiKey=... in the URL, hold off rendering routes until we've either
+  // consumed that token or confirmed there wasn't one — otherwise ProtectedRoute
+  // redirects to /login before the token is ever read.
+  const hashHasApiKey = new URLSearchParams(window.location.hash.slice(1)).has('apiKey');
+  const [authChecked, setAuthChecked] = useState(!hashHasApiKey);
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -27,6 +34,37 @@ function App() {
     window.addEventListener('storage', handleStorageChange);
     handleStorageChange();
     return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  // Consume an incoming ?apiKey from the URL hash (cross-app handoff).
+  useEffect(() => {
+    if (!hashHasApiKey) return;
+
+    const params  = new URLSearchParams(window.location.hash.slice(1));
+    const apiKey  = params.get('apiKey');
+
+    // Strip the hash immediately so the key never sits in browser history longer than needed.
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/auth/me`, {
+      headers: { 'X-User-API-Key': apiKey },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`Could not verify token: ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        handleLoginSuccess(apiKey, {
+          username: data.username,
+          email: data.email,
+        });
+      })
+      .catch((err) => {
+        console.error('Cross-app token handoff failed:', err);
+        // Token was bad/expired — fall through to the normal login page.
+      })
+      .finally(() => setAuthChecked(true));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleLoginSuccess = (apiKey, userData) => {
@@ -79,6 +117,10 @@ function App() {
     );
   };
 
+  if (!authChecked) {
+    return <div className="auth-check-loading">Signing you in…</div>;
+  }
+
   return (
     <Router>
       <Routes>
@@ -86,7 +128,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password"  element={<ResetPasswordPage />} />
         <Route path="/logout"          element={<Logout />} />
-        <Route path="/welcome"         element={<WelcomePage />} />  {/* PUBLIC — after registration */}
+        <Route path="/welcome"         element={<WelcomePage />} />
         <Route path="/register"        element={isAuthenticated ? <Navigate to="/" replace /> : <RegistrationPage />} />
         <Route path="/approve-join"    element={<ApproveJoinPage />} />
 
