@@ -427,3 +427,6 @@
   color: #856404;
   border: 1px solid #856404;
 }
+.current-plan-card__note--warning {
+  color: #b36b00; 
+}
