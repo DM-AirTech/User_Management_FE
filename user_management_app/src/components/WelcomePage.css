@@ -52,3 +52,35 @@
 .wp-arrow { font-size: 18px; color: #f39c12; opacity: 0.5; transition: opacity 0.2s, transform 0.2s; }
 .wp-signout { margin-top: 28px; font-size: 12px; color: #9aafba; }
 .wp-signout a { color: #9aafba; text-decoration: underline; text-underline-offset: 2px; }
+.wp-pending {
+  background: #fff;
+  border-radius: 16px;
+  border: 1.5px solid #e2e8ec;
+  padding: 40px 32px;
+  max-width: 380px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.wp-pending-icon {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  background: rgba(243, 156, 18, 0.1);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 20px;
+}
+.wp-pending-icon svg { width: 26px; height: 26px; }
+.wp-pending-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #081e2d;
+  margin-bottom: 10px;
+}
+.wp-pending-desc {
+  font-size: 13px;
+  color: #6a8494;
+  line-height: 1.6;
+}

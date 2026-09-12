@@ -3,65 +3,60 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './registration.css';
 
-// ─────────────────────────────────────────────
-// Helper: extract domain from email
-// ─────────────────────────────────────────────
+// Extract the domain portion of an email address, e.g. "a@b.com" -> "b.com"
 const extractDomain = (email) => {
   const parts = email.split('@');
   return parts.length === 2 ? parts[1].toLowerCase() : null;
 };
 
-const RegistrationPage = () => {
-  const navigate   = useNavigate();
-  const location   = useLocation();
+const RegistrationPage = ({ onRegisterSuccess }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // ── Core form fields ──
-  const [username,        setUsername]        = useState('');
-  const [org_name,        setOrgName]         = useState('');
-  const [email,           setEmail]           = useState('');
-  const [password,        setPassword]        = useState('');
+  // Core form fields
+  const [username, setUsername] = useState('');
+  const [org_name, setOrgName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role,            setRole]            = useState('');
+  const [role, setRole] = useState('');
 
-  // ── New flow fields ──
-  const [isAdmin,      setIsAdmin]      = useState(false);
-  const [adminEmail,   setAdminEmail]   = useState('');
-  const [inviteToken,  setInviteToken]  = useState(null);
+  // Admin / invite flow fields
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminEmail, setAdminEmail] = useState('');
+  const [inviteToken, setInviteToken] = useState(null);
   const [lockedDomain, setLockedDomain] = useState(null);
 
-  // ── Domain check state ──
-  const [domainStatus,   setDomainStatus]   = useState(null);
+  // Domain lookup state (only relevant when there's no invite)
+  const [domainStatus, setDomainStatus] = useState(null);
   const [domainChecking, setDomainChecking] = useState(false);
   const debounceRef = useRef(null);
 
-  // ── UI state ──
-  const [termsAccepted,       setTermsAccepted]       = useState(false);
-  const [privacyAccepted,     setPrivacyAccepted]     = useState(false);
-  const [successMessage,      setSuccessMessage]      = useState('');
-  const [popupError,          setPopupError]          = useState('');
-  const [showPassword,        setShowPassword]        = useState(false);
+  // UI state
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [popupError, setPopupError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isSubmitting,        setIsSubmitting]        = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ── Invite validation state ──
-  const [inviteInfo,    setInviteInfo]    = useState(null);
-  const [inviteError,   setInviteError]   = useState('');
+  // Invite validation state
+  const [inviteInfo, setInviteInfo] = useState(null);
+  const [inviteError, setInviteError] = useState('');
   const [inviteLoading, setInviteLoading] = useState(false);
 
   const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
-  const isLengthValid  = password.length >= 8;
-  const hasLowercase   = /[a-z]/.test(password);
-  const hasUppercase   = /[A-Z]/.test(password);
-  const hasDigit       = /\d/.test(password);
+  const isLengthValid = password.length >= 8;
+  const hasLowercase = /[a-z]/.test(password);
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasDigit = /\d/.test(password);
   const hasSpecialChar = /[^\w\s]/.test(password);
 
-
-  // ─────────────────────────────────────────────
-  // On mount: check for ?invite= in URL
-  // ─────────────────────────────────────────────
+  // On mount, check for an ?invite= token in the URL and validate it
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const token  = params.get('invite');
+    const token = params.get('invite');
     if (!token) return;
 
     setInviteToken(token);
@@ -82,10 +77,8 @@ const RegistrationPage = () => {
       .finally(() => setInviteLoading(false));
   }, [location.search]);
 
-
-  // ─────────────────────────────────────────────
-  // Live domain check — debounced 600ms after email changes
-  // ─────────────────────────────────────────────
+  // Live domain lookup, debounced 600ms after the email changes.
+  // Skipped entirely when registering via an invite link.
   useEffect(() => {
     if (inviteToken) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -99,7 +92,7 @@ const RegistrationPage = () => {
     debounceRef.current = setTimeout(async () => {
       setDomainChecking(true);
       try {
-        const res  = await fetch(
+        const res = await fetch(
           `${process.env.REACT_APP_API_BASE_URL}/auth/check-domain?email=${encodeURIComponent(email)}`
         );
         const data = await res.json();
@@ -114,49 +107,41 @@ const RegistrationPage = () => {
     return () => clearTimeout(debounceRef.current);
   }, [email, inviteToken]);
 
-
-  // ─────────────────────────────────────────────
-  // Domain status banner
-  // ─────────────────────────────────────────────
   const renderDomainBanner = () => {
     if (inviteToken) {
-      if (inviteLoading) return <p className="domain-banner checking">Validating invite link...</p>;
-      if (inviteError)   return <p className="domain-banner error">{inviteError}</p>;
-      if (inviteInfo)    return (
-        <p className="domain-banner info">
-          ✅ Invite valid — you are joining <strong>{inviteInfo.org_name}</strong>.
-          Your email must end in <strong>@{inviteInfo.email_domain}</strong>.
-        </p>
-      );
+      if (inviteLoading) return <p className="domain-banner checking">Validating invite link…</p>;
+      if (inviteError) return <p className="domain-banner error">{inviteError}</p>;
+      if (inviteInfo)
+        return (
+          <p className="domain-banner info">
+            Invite valid — you're joining <strong>{inviteInfo.org_name}</strong>. Your email must end
+            in <strong>@{inviteInfo.email_domain}</strong>.
+          </p>
+        );
       return null;
     }
 
-    if (domainChecking) return <p className="domain-banner checking">Checking domain...</p>;
-    if (!domainStatus)  return null;
+    if (domainChecking) return <p className="domain-banner checking">Checking domain…</p>;
+    if (!domainStatus) return null;
 
     if (domainStatus.org_exists) {
       return (
         <p className="domain-banner warning">
-          ℹ️ An organisation (<strong>{domainStatus.org_name}</strong>) already exists for{' '}
-          <strong>@{domainStatus.domain}</strong>.
+          <strong>{domainStatus.org_name}</strong> already exists for @{domainStatus.domain}.{' '}
           {domainStatus.has_admin
-            ? ' The admin will be asked to approve your account.'
-            : ' No admin is set yet — you may register as admin.'}
+            ? 'The admin will be asked to approve your account.'
+            : 'No admin is set yet — you may register as admin.'}
         </p>
       );
     }
 
     return (
       <p className="domain-banner success">
-        ✅ No organisation found for <strong>@{domainStatus.domain}</strong> — you can register as admin.
+        No organisation found for @{domainStatus.domain} — you can register as admin.
       </p>
     );
   };
 
-
-  // ─────────────────────────────────────────────
-  // SUBMIT
-  // ─────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     setPopupError('');
@@ -167,7 +152,9 @@ const RegistrationPage = () => {
       return;
     }
     if (!strongPasswordRegex.test(password)) {
-      setPopupError('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
+      setPopupError(
+        'Password must be at least 8 characters and include uppercase, lowercase, number, and special character.'
+      );
       return;
     }
     if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
@@ -200,42 +187,37 @@ const RegistrationPage = () => {
       email,
       org_name,
       role,
-      is_admin:     inviteToken ? false : isAdmin,
-      admin_email:  (!isAdmin && !inviteToken && adminEmail) ? adminEmail : null,
+      is_admin: inviteToken ? false : isAdmin,
+      admin_email: !isAdmin && !inviteToken && adminEmail ? adminEmail : null,
       invite_token: inviteToken || null,
     };
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/auth/register`,
-        {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify(payload),
-        }
-      );
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-      const data = await response.json();
+            const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.detail || `Registration failed with status: ${response.status}`);
       }
 
-      let message = '';
-      if (data.is_approved) {
-        message =
-          `Account created for "${data.username}"! ` +
-          `A verification email has been sent to ${data.email}. ` +
-          `Please verify to activate your account. Check your inbox and spam folder.`;
+      if (data.api_key) {
+        // Account was auto-approved and the backend handed us a session —
+        // log the user in immediately instead of sending them to /login.
+        onRegisterSuccess(data.api_key, {
+          username: data.username,
+          email: data.email,
+        });
       } else {
-        message =
-          `Registration submitted for "${data.username}". ` +
-          `Your account is pending admin approval. ` +
-          `You will receive an email once approved. Check your inbox and spam folder.`;
+        // Pending admin approval — no session exists yet.
+        navigate('/welcome', { state: { pending: true } });
       }
 
-      navigate('/welcome');
       resetForm();
     } catch (err) {
       console.error('Registration error:', err);
@@ -261,13 +243,9 @@ const RegistrationPage = () => {
     setDomainStatus(null);
   };
 
-
-  // ─────────────────────────────────────────────
-  // RENDER
-  // ─────────────────────────────────────────────
   const ChecklistItem = ({ isValid, label }) => (
     <div className={`checklist-item ${isValid ? 'valid' : 'invalid'}`}>
-      <span className="checklist-icon">{isValid ? '✔' : '✖'}</span>
+      <span className="checklist-icon">{isValid ? '✓' : '–'}</span>
       <span>{label}</span>
     </div>
   );
@@ -276,7 +254,7 @@ const RegistrationPage = () => {
     return (
       <div className="register-page">
         <div className="register-container">
-          <p>Validating your invite link...</p>
+          <p>Validating your invite link…</p>
         </div>
       </div>
     );
@@ -286,10 +264,10 @@ const RegistrationPage = () => {
     return (
       <div className="register-page">
         <div className="register-container">
-          <h2 className="register-title">Invalid Invite</h2>
+          <h2 className="register-title">Invalid invite</h2>
           <p className="register-error">{inviteError}</p>
           <button className="register-submit-btn" onClick={() => navigate('/register')}>
-            Register Without Invite
+            Register without invite
           </button>
         </div>
       </div>
@@ -299,7 +277,7 @@ const RegistrationPage = () => {
   return (
     <div className="register-page">
       <div className="register-container">
-        <h2 className="register-title">Create DM-AirTech Account</h2>
+        <h2 className="register-title">Create DM-AirTech account</h2>
         <p className="register-subtitle">
           {inviteInfo
             ? `You've been invited to join ${inviteInfo.org_name}.`
@@ -310,10 +288,10 @@ const RegistrationPage = () => {
 
         {!successMessage && (
           <form onSubmit={handleSubmit} className="register-form">
-
-            {/* USERNAME */}
             <div className="register-field">
-              <label htmlFor="username" className="register-label">Username:</label>
+              <label htmlFor="username" className="register-label">
+                Username
+              </label>
               <input
                 type="text"
                 id="username"
@@ -324,11 +302,9 @@ const RegistrationPage = () => {
               />
             </div>
 
-            {/* ORG NAME */}
             <div className="register-field">
               <label htmlFor="org_name" className="register-label">
-                Organisation:
-                <span className="register-label-hint"> use your official registered name</span>
+                Organisation <span className="register-label-hint">use your official registered name</span>
               </label>
               <input
                 type="text"
@@ -337,33 +313,36 @@ const RegistrationPage = () => {
                 onChange={(e) => setOrgName(e.target.value)}
                 required
                 disabled={!!inviteInfo}
-                placeholder="e.g., DM-AirTech BV  /  Acme Corp Ltd"
+                placeholder="e.g. DM-AirTech BV, Acme Corp Ltd"
                 className={`register-input ${inviteInfo ? 'register-input-locked' : ''}`}
               />
               {!inviteInfo && (
                 <p className="register-field-hint">
-                  Enter your organisation exactly as it appears on official documents — including legal suffixes such as Ltd, BV, GmbH, Inc.
+                  Enter it exactly as it appears on official documents, including legal suffixes such
+                  as Ltd, BV, GmbH, or Inc.
                 </p>
               )}
             </div>
 
-            {/* ROLE */}
             <div className="register-field">
-              <label htmlFor="role" className="register-label">Role:</label>
+              <label htmlFor="role" className="register-label">
+                Role
+              </label>
               <input
                 type="text"
                 id="role"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
                 required
-                placeholder="Enter your role (e.g. Manager, Developer, Analyst)"
+                placeholder="e.g. Admin, Manager, Developer, Analyst"
                 className="register-input"
               />
             </div>
 
-            {/* EMAIL */}
             <div className="register-field">
-              <label htmlFor="email" className="register-label">Email:</label>
+              <label htmlFor="email" className="register-label">
+                Email
+              </label>
               <input
                 type="email"
                 id="email"
@@ -376,7 +355,6 @@ const RegistrationPage = () => {
               {renderDomainBanner()}
             </div>
 
-            {/* FLOW SELECTOR (hidden when via invite) */}
             {!inviteToken && (
               <div className="register-field register-flow-selector">
                 <div className="register-checkbox-row">
@@ -395,36 +373,35 @@ const RegistrationPage = () => {
                 </div>
                 <p className="register-field-hint">
                   {isAdmin
-                    ? '✅ You will be set as the admin. Your organisation domain will be registered.'
-                    : 'If you are the first person from your company to register, tick this box.'}
+                    ? "You'll be set as admin, and your organisation's domain will be registered."
+                    : 'Tick this if you are the first person from your company to register.'}
                 </p>
 
                 {!isAdmin && (
                   <div className="register-field">
                     <label htmlFor="adminEmail" className="register-label">
-                      Admin email <span className="register-label-hint">(optional)</span>:
+                      Admin email <span className="register-label-hint">optional</span>
                     </label>
                     <input
                       type="email"
                       id="adminEmail"
                       value={adminEmail}
                       onChange={(e) => setAdminEmail(e.target.value)}
-                      placeholder="Enter your organisation admin's email"
+                      placeholder="Your organisation admin's email"
                       className="register-input"
                     />
                     <p className="register-field-hint">
-                      If you know your organisation's admin email, enter it here and they will be
-                      asked to approve your account directly. Otherwise, leave blank and we will
-                      try to find your organisation by email domain.
+                      The admin will need to approve your account.
                     </p>
                   </div>
                 )}
               </div>
             )}
 
-            {/* PASSWORD */}
             <div className="register-field">
-              <label htmlFor="password" className="register-label">Password:</label>
+              <label htmlFor="password" className="register-label">
+                Password
+              </label>
               <div className="register-input-wrapper">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -444,17 +421,18 @@ const RegistrationPage = () => {
                 </button>
               </div>
               <div className="register-checklist">
-                <ChecklistItem isValid={isLengthValid}  label="At least 8 characters" />
-                <ChecklistItem isValid={hasUppercase}   label="At least one uppercase letter (A-Z)" />
-                <ChecklistItem isValid={hasLowercase}   label="At least one lowercase letter (a-z)" />
-                <ChecklistItem isValid={hasDigit}       label="At least one number (0-9)" />
-                <ChecklistItem isValid={hasSpecialChar} label="At least one symbol (e.g. !@#$%^&*)" />
+                <ChecklistItem isValid={isLengthValid} label="At least 8 characters" />
+                <ChecklistItem isValid={hasUppercase} label="One uppercase letter" />
+                <ChecklistItem isValid={hasLowercase} label="One lowercase letter" />
+                <ChecklistItem isValid={hasDigit} label="One number" />
+                <ChecklistItem isValid={hasSpecialChar} label="One symbol" />
               </div>
             </div>
 
-            {/* CONFIRM PASSWORD */}
             <div className="register-field">
-              <label htmlFor="confirmPassword" className="register-label">Confirm Password:</label>
+              <label htmlFor="confirmPassword" className="register-label">
+                Confirm password
+              </label>
               <div className="register-input-wrapper">
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
@@ -475,7 +453,6 @@ const RegistrationPage = () => {
               </div>
             </div>
 
-            {/* TERMS & PRIVACY */}
             <div className="register-checkbox-row">
               <input
                 type="checkbox"
@@ -511,14 +488,12 @@ const RegistrationPage = () => {
               className="register-submit-btn"
               disabled={isSubmitting || (inviteToken && !!inviteError)}
             >
-              {isSubmitting ? 'Registering...' : 'Register'}
+              {isSubmitting ? 'Registering…' : 'Register'}
             </button>
-
           </form>
         )}
       </div>
 
-      {/* ERROR POPUP */}
       {popupError && (
         <div className="register-modal-overlay">
           <div className="register-modal">
